@@ -7,10 +7,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +39,31 @@ public class MainActivity extends AppCompatActivity {
                 SimpleCursorAdapter.IGNORE_ITEM_VIEW_TYPE);
         ListView listview = (ListView) findViewById(R.id.listView);
         listview.setAdapter(this.adapter);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int pos, long id) {
+                TextView animId = (TextView) view.findViewById(android.R.id.text1);
+                Animal zwierz = db.pobierz(Integer.parseInt(animId.getText().toString()));
+                Intent intencja = new
+                        Intent(getApplicationContext(),
+                        DodajWpis.class);
+
+                intencja.putExtra("element", zwierz);
+                startActivityForResult(intencja, 2);
+            }
+        });
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView animId = (TextView) view.findViewById(android.R.id.text1);
+                db.usun(animId.getText().toString());
+                adapter.changeCursor(db.lista());
+                adapter.notifyDataSetChanged();
+                return true;
+            }
+        });
+
     }
 
     @Override
@@ -58,6 +86,16 @@ public class MainActivity extends AppCompatActivity {
             Animal nowy = (Animal) extras.getSerializable("nowy");
             this.db.dodaj(nowy);
             adapter.changeCursor(db.lista());
+            adapter.notifyDataSetChanged();
+        }
+
+        if ((requestCode == 2) && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Animal nowy = (Animal)extras.getSerializable("nowy");
+
+            this.db.aktualizuj(nowy);
+
+            adapter.changeCursor(this.db.lista());
             adapter.notifyDataSetChanged();
         }
     }
