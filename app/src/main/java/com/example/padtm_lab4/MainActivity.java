@@ -10,13 +10,13 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<String> target;
     private SimpleCursorAdapter adapter;
     private MySQLite db;
 
@@ -25,13 +25,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String[] values = new String[] { "Pies",
-                "Kot", "Koń", "Gołąb", "Kruk", "Dzik", "Karp",
-                "Osioł", "Chomik", "Mysz", "Jeż", "Kraluch" };
+
+
 
         this.db = new MySQLite(this);
-        this.target = new ArrayList<String>();
-        this.target.addAll(Arrays.asList(values));
         this.adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2,
                 this.db.lista(),
                 new String[] {"_id", "gatunek" },
@@ -54,13 +51,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(
-            int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            String nowy = (String) extras.get("wpis");
-            target.add(nowy);
+            Animal nowy = (Animal) extras.getSerializable("nowy");
+            this.db.dodaj(nowy);
+            adapter.changeCursor(db.lista());
             adapter.notifyDataSetChanged();
         }
     }
